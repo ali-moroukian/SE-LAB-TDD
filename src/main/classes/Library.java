@@ -84,8 +84,33 @@ public class Library {
      * @return             The list of students that match the search criteria. Returns null if search type is title or author.
      */
     public ArrayList<Student> searchStudents(SearchByType searchByType, ArrayList<Object> keys) {
-        // TODO complete function
-        return null;
+        Map<SearchByType, Method> methodMap = new HashMap<>();
+
+        try {
+            methodMap.put(SearchByType.ID, Student.class.getMethod("getId"));
+            methodMap.put(SearchByType.NAME, Student.class.getMethod("getName"));
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+
+        if (!methodMap.containsKey(searchByType)) {
+            return null;
+        }
+
+        ArrayList<Student> result = new ArrayList<>();
+        for (Student student : this.students) {
+            try {
+                Method method = methodMap.get(searchByType);
+                Object value = method.invoke(student);
+                if (keys.contains(value)) {
+                    result.add(student);
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+
     }
 
     /**

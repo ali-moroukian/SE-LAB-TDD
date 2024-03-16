@@ -1,6 +1,10 @@
 package main.classes;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Library {
     private ArrayList<Book> books;
@@ -93,8 +97,34 @@ public class Library {
      * @return             The list of books that match the search criteria. Returns null if search type is name.
      */
     public ArrayList<Book> searchBooks(SearchByType searchByType, ArrayList<Object> keys) {
-        // TODO complete function
-        return null;
+
+        Map<SearchByType, Method> methodMap = new HashMap<>();
+
+        try {
+            methodMap.put(SearchByType.ID, Book.class.getMethod("getId"));
+            methodMap.put(SearchByType.TITLE, Book.class.getMethod("getTitle"));
+            methodMap.put(SearchByType.AUTHOR, Book.class.getMethod("getAuthor"));
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+
+        if (!methodMap.containsKey(searchByType)) {
+            return null;
+        }
+
+        ArrayList<Book> result = new ArrayList<>();
+        for (Book book : books) {
+            try {
+                Method method = methodMap.get(searchByType);
+                Object value = method.invoke(book);
+                if (keys.contains(value)) {
+                    result.add(book);
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
     /**
